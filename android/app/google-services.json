@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "725615374942",
+    "project_id": "leavemanagementsystem-d7c70",
+    "storage_bucket": "leavemanagementsystem-d7c70.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725615374942:android:3f97bc6ff9f67459c93acf",
+        "android_client_info": {
+          "package_name": "com.example.employee_management_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDW_ww1Ibc8fZZtq67Yfg_ZTUjmB0ezMfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
