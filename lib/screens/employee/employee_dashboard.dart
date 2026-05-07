@@ -9,7 +9,6 @@ class EmployeeDashboard extends StatelessWidget {
   const EmployeeDashboard({super.key});
 
   @override
-  @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
     final leaveProvider = Provider.of<LeaveProvider>(context);
@@ -17,25 +16,35 @@ class EmployeeDashboard extends StatelessWidget {
     final user = auth.currentUser;
 
     if (user == null) {
-      return const Scaffold(body: Center(child: Text("No user logged in")));
+      return const Scaffold(
+        body: Center(
+          child: Text("No user logged in"),
+        ),
+      );
     }
 
     final userName = user.name;
 
-    final myLeaves =
-        (((leaveProvider as dynamic).leaveApplications ?? <dynamic>[]) as List)
-            .where((l) => l.employeeName == userName)
-            .toList();
+    // ✅ FIXED
+    final myLeaves = leaveProvider.leaves
+        .where((leave) => leave.employeeName == userName)
+        .toList();
 
     return Scaffold(
       drawer: const EmployeeDrawer(),
 
-      appBar: AppBar(title: const Text("Employee Leave Dashboard")),
+      appBar: AppBar(
+        title: const Text("Employee Leave Dashboard"),
+        centerTitle: true,
+      ),
 
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+            colors: [
+              Color(0xff4facfe),
+              Color(0xff00f2fe),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -48,38 +57,73 @@ class EmployeeDashboard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Welcome Card
+                /// WELCOME CARD
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
+
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    "Welcome, $userName 👋",
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.blue.shade100,
+                        child: const Icon(
+                          Icons.person,
+                          color: Colors.blue,
+                          size: 30,
+                        ),
+                      ),
+
+                      const SizedBox(width: 15),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Welcome Back 👋",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+
+                            Text(
+                              userName,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
-                /// Leave Summary Card
+                /// TOTAL LEAVE CARD
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
+
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
                   ),
+
                   child: Column(
                     children: [
                       const Icon(
                         Icons.event_note,
-                        size: 40,
+                        size: 45,
                         color: Colors.blue,
                       ),
 
@@ -88,10 +132,12 @@ class EmployeeDashboard extends StatelessWidget {
                       Text(
                         myLeaves.length.toString(),
                         style: const TextStyle(
-                          fontSize: 28,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
+                      const SizedBox(height: 5),
 
                       const Text(
                         "Total Leave Requests",
@@ -103,54 +149,116 @@ class EmployeeDashboard extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
+                /// SECTION TITLE
                 const Text(
                   "Recent Leave Requests",
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 15),
 
-                /// Leave List
+                /// EMPTY STATE
+                if (myLeaves.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+
+                    child: const Center(
+                      child: Text(
+                        "No leave requests yet",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+
+                /// LEAVE LIST
                 ListView.builder(
                   itemCount: myLeaves.length,
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+
                   itemBuilder: (context, index) {
                     final leave = myLeaves[index];
+
+                    Color statusColor = Colors.orange;
+
+                    if (leave.status == "Approved") {
+                      statusColor = Colors.green;
+                    } else if (leave.status == "Rejected") {
+                      statusColor = Colors.red;
+                    }
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
 
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(18),
                       ),
 
                       child: ListTile(
-                        leading: const Icon(
-                          Icons.calendar_month,
-                          color: Colors.blue,
+                        contentPadding: const EdgeInsets.all(15),
+
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue.shade100,
+                          child: const Icon(
+                            Icons.calendar_month,
+                            color: Colors.blue,
+                          ),
                         ),
 
-                        title: Text(leave.leaveType),
-
-                        subtitle: Text(
-                          "Days: ${leave.numberOfDays}\nReason: ${leave.reason}",
-                        ),
-
-                        trailing: Text(
-                          leave.status,
-                          style: TextStyle(
+                        title: Text(
+                          leave.leaveType,
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: leave.status == "Approved"
-                                ? Colors.green
-                                : leave.status == "Rejected"
-                                ? Colors.red
-                                : Colors.orange,
+                          ),
+                        ),
+
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Days: ${leave.numberOfDays}",
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              Text(
+                                "Reason: ${leave.reason}",
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+
+                          child: Text(
+                            leave.status,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
@@ -158,18 +266,25 @@ class EmployeeDashboard extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 25),
 
-                /// Apply Leave Button
+                /// APPLY BUTTON
                 SizedBox(
                   width: double.infinity,
+
                   child: ElevatedButton.icon(
                     icon: const Icon(Icons.add),
-                    label: const Text("Apply Leave"),
+
+                    label: const Text(
+                      "Apply Leave",
+                      style: TextStyle(fontSize: 16),
+                    ),
 
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
                       backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(16),
+
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -179,7 +294,8 @@ class EmployeeDashboard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const LeaveApplicationScreen(),
+                          builder: (_) =>
+                              const LeaveApplicationScreen(),
                         ),
                       );
                     },

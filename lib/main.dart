@@ -2,19 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'firebase_options.dart';
+
+// PROVIDERS
 import 'providers/auth_provider.dart';
+import 'providers/chat_provider.dart';
 import 'providers/employee_provider.dart';
-import 'providers/user_provider.dart';
-import 'providers/salary_provider.dart';
 import 'providers/leave_provider.dart';
 import 'providers/payslip_provider.dart';
-import 'providers/chat_provider.dart';
+import 'providers/salary_provider.dart';
+import 'providers/user_provider.dart';
 
+// SCREENS
 import 'screens/onboard_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // ✅ FIX
+
+  // ✅ Initialize Firebase correctly for Web/Android/Desktop
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(const MyApp());
 }
@@ -26,24 +34,66 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-
-        ChangeNotifierProxyProvider<AuthProvider, EmployeeProvider>(
-          create: (_) => EmployeeProvider(authProvider: AuthProvider()),
-          update: (_, auth, __) =>
-              EmployeeProvider(authProvider: auth),
+        /// AUTH
+        ChangeNotifierProvider<AuthProvider>(
+          create: (_) => AuthProvider(),
         ),
 
-        ChangeNotifierProvider(create: (_) => UserProvider()),
-        ChangeNotifierProvider(create: (_) => SalaryProvider()),
-        ChangeNotifierProvider(create: (_) => LeaveProvider()),
-        ChangeNotifierProvider(create: (_) => PayslipProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()),
+        /// EMPLOYEE PROVIDER
+        ChangeNotifierProxyProvider<AuthProvider, EmployeeProvider>(
+          create: (context) => EmployeeProvider(
+            authProvider: context.read<AuthProvider>(),
+          ),
+
+          update: (_, authProvider, previous) =>
+              previous ??
+              EmployeeProvider(
+                authProvider: authProvider,
+              ),
+        ),
+
+        /// USER
+        ChangeNotifierProvider<UserProvider>(
+          create: (_) => UserProvider(),
+        ),
+
+        /// SALARY
+        ChangeNotifierProvider<SalaryProvider>(
+          create: (_) => SalaryProvider(),
+        ),
+
+        /// LEAVE
+        ChangeNotifierProvider<LeaveProvider>(
+          create: (_) => LeaveProvider(),
+        ),
+
+        /// PAYSLIPS
+        ChangeNotifierProvider<PayslipProvider>(
+          create: (_) => PayslipProvider(),
+        ),
+
+        /// CHAT
+        ChangeNotifierProvider<ChatProvider>(
+          create: (_) => ChatProvider(),
+        ),
       ],
+
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: "Employee Management System",
-        theme: ThemeData(primarySwatch: Colors.blue),
+        title: 'Employee Management System',
+
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: Colors.grey.shade100,
+
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            centerTitle: true,
+          ),
+
+          useMaterial3: true,
+        ),
+
         home: const OnboardingScreen(),
       ),
     );

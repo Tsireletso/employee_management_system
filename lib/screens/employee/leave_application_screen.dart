@@ -57,7 +57,7 @@ class _LeaveApplicationScreenState extends State<LeaveApplicationScreen> {
           children: [
             /// LEAVE TYPE
             DropdownButtonFormField<String>(
-              value: leaveType,
+              initialValue: leaveType,
               items: const [
                 DropdownMenuItem(
                   value: "Annual Leave",
